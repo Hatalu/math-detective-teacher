@@ -1,0 +1,64 @@
+import { Component, useEffect, type ReactNode } from 'react';
+import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { SettingsProvider, useSettings } from './lib/settings';
+import Intro from './pages/Intro';
+import HQ from './pages/HQ';
+import Example from './pages/Example';
+import SettingsPage from './pages/Settings';
+import Boards from './pages/Boards';
+import Board from './pages/Board';
+import Cases from './pages/Cases';
+
+/** Last line of defence: a crash in any page shows a usable recovery screen. */
+class Boundary extends Component<{ children: ReactNode }, { err?: Error }> {
+  state: { err?: Error } = {};
+  static getDerivedStateFromError(err: Error) { return { err }; }
+  render() {
+    if (!this.state.err) return this.props.children;
+    return (
+      <div className="grid min-h-dvh place-items-center bg-navy p-6 text-cream">
+        <div className="max-w-md text-center">
+          <h1 className="mb-2 text-2xl font-bold text-gold">เกิดข้อผิดพลาดบางอย่าง</h1>
+          <p className="mb-4 opacity-80">{this.state.err.message}</p>
+          <a href="#/hq" onClick={() => this.setState({ err: undefined })} className="inline-block rounded-xl bg-gold px-6 py-3 font-bold text-navy">กลับสำนักงานนักสืบ</a>
+        </div>
+      </div>
+    );
+  }
+}
+
+function Routed() {
+  const loc = useLocation();
+  const { motionOn } = useSettings();
+  useEffect(() => { scrollTo(0, 0); }, [loc.pathname]);
+  return (
+    <div className={motionOn ? '' : 'no-motion'}>
+      <AnimatePresence mode="wait">
+        <motion.div key={loc.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <Routes location={loc}>
+            <Route path="/" element={<Intro />} />
+            <Route path="/hq" element={<HQ />} />
+            <Route path="/example" element={<Example />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/boards" element={<Boards />} />
+            <Route path="/board/:code" element={<Board />} />
+            <Route path="/cases" element={<Cases />} />
+            <Route path="/cases/:n" element={<Cases />} />
+            <Route path="*" element={<HQ />} />
+          </Routes>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <SettingsProvider>
+      <Boundary>
+        <HashRouter><Routed /></HashRouter>
+      </Boundary>
+    </SettingsProvider>
+  );
+}

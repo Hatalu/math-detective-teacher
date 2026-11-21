@@ -1,0 +1,113 @@
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, Hand } from 'lucide-react';
+import type { CaseScene } from '../lib/cases';
+import { useSettings } from '../lib/settings';
+import { sfx } from '../lib/sound';
+import { Art } from './art';
+
+/** Hidden-object phase on the teacher's screen: the teacher taps the clues the class points at; each clue gives one data value.
+ *  Nothing is stored, so every class starts the case fresh. No auto-advance: students need time to write the values down. */
+export function SceneHunt({ scene, onDone }: { scene: CaseScene; onDone: () => void }) {
+  const { s, motionOn } = useSettings();
+  const items = scene.items;
+  const [found, setFound] = useState<number[]>([]);
+  const [pop, setPop] = useState<number | null>(null);
+  const [stamp, setStamp] = useState(false);
+  const all = found.length === items.length;
+
+  useEffect(() => {
+    if (!all) return;
+    sfx('stamp', s.muted); setStamp(true);
+    const t = setTimeout(() => setStamp(false), motionOn ? 1800 : 800);
+    return () => clearTimeout(t);
+  }, [all]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function take(i: number) {
+    if (found.includes(i)) return;
+    sfx('reveal', s.muted); setFound((f) => (f.includes(i) ? f : [...f, i])); setPop(i); // functional: fast double taps must not drop a find
+  }
+
+  return (
+    <div className="relative flex h-full w-full flex-col bg-navy text-cream">
+      {/* checklist: what to find; found ones fade and get a red tick */}
+      <div className="shrink-0 bg-navy px-3 py-2 shadow-xl">
+        <div className="mb-1.5 flex items-center gap-2">
+          <Hand className="shrink-0 text-gold" size={20} aria-hidden />
+          <p className="min-w-0 flex-1 font-bold leading-tight text-gold sm:text-lg">ภารกิจ: หาของเหล่านี้ในฉากให้ครบ {items.length} ชิ้น<span className="block text-xs font-normal text-cream/80 sm:hidden">↔ เลื่อนฉากซ้าย-ขวาเพื่อหาให้ครบ</span></p>
+          <span className="shrink-0 font-num text-2xl font-black text-gold sm:text-3xl" aria-live="polite">{found.length}/{items.length}</span>
+        </div>
+        <ul className="flex gap-1.5 overflow-x-auto sm:justify-center sm:gap-2" aria-label="รายการของที่ต้องหา">
+          {items.map((it, i) => {
+            const got = found.includes(i);
+            return (
+              <li key={i} className={`relative flex w-[72px] shrink-0 flex-col items-center rounded-xl p-1 sm:w-[84px] ${got ? 'bg-cream/40' : 'bg-cream'}`} aria-label={`${it.label}${got ? ' (เจอแล้ว)' : ''}`}>
+                <Art file={it.file} className={`h-10 w-10 object-contain transition sm:h-12 sm:w-12 ${got ? 'opacity-35 grayscale' : ''}`} />
+                <span className={`mt-0.5 w-full truncate text-center text-[11px] font-semibold leading-tight text-navy sm:text-xs ${got ? 'opacity-50' : ''}`}>{it.label}</span>
+                {got && (
+                  <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} viewBox="0 0 24 24" className="absolute left-1/2 top-1 h-10 w-10 -translate-x-1/2 drop-shadow sm:h-12 sm:w-12" aria-hidden>
+                    <path d="M4 13l5 5L20 6" fill="none" stroke="#DC2626" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                  </motion.svg>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* scene keeps the art's 16:9 ratio so items stay on the spots they were placed on */}
+      {/* phones (portrait): scene is as tall as the area and wider than the screen, so students swipe left/right */}
+      <div className="flex min-h-0 flex-1 overflow-x-auto overflow-y-hidden sm:overflow-hidden">
+        <div className="relative m-auto aspect-video max-sm:h-full max-sm:shrink-0 sm:max-h-full sm:w-full sm:max-w-[calc((100dvh-15rem)*16/9)] [container-type:inline-size]">
+          <Art file={scene.bg} className="absolute inset-0 h-full w-full object-cover" fallback={<div className="absolute inset-0 bg-gradient-to-br from-dblue to-navy" />} />
+          {items.map((it, i) => {
+            const got = found.includes(i);
+            return (
+              <button key={i} type="button" onClick={() => take(i)} disabled={got || all}
+                aria-label={got ? `${it.name}: ${it.value}` : 'เบาะแสที่ซ่อนอยู่'}
+                className="absolute -translate-x-1/2 -translate-y-1/2 focus-visible:outline focus-visible:outline-4 focus-visible:outline-gold"
+                style={{ left: `${it.x}%`, top: `${it.y}%`, width: `max(${it.w}cqw, 18px)` }}>
+                <span className="block" style={{ transform: `rotate(${it.rot ?? 0}deg)`, opacity: got ? 0.35 : 1 }}>
+                  <Art file={it.file} className="pointer-events-none w-full object-contain drop-shadow-[0_2px_3px_rgba(0,0,0,.6)]" fallback={<span className="block aspect-square rounded-full bg-gold/80" />} />
+                </span>
+                {got && (
+                  <motion.span initial={{ scale: 0.3 }} animate={{ scale: 1 }}
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gold px-1.5 font-num text-sm font-black text-navy shadow-lg ring-2 ring-navy sm:text-lg">{it.value}</motion.span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* clues found so far */}
+      <div className="flex min-h-[52px] shrink-0 flex-wrap items-center gap-1.5 bg-cream p-2 text-navy" aria-label="เบาะแสที่พบแล้ว">
+        <span className="mr-1 text-sm font-semibold">พบแล้ว:</span>
+        {found.map((i) => <span key={i} className="rounded-md bg-white px-2 font-num text-lg font-bold ring-1 ring-navy/20">{items[i].value}</span>)}
+        {all && <button type="button" onClick={onDone} className="ml-auto inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-gold px-5 text-xl font-black text-navy shadow-[0_4px_0_#b5740a] active:translate-y-[2px]">ไปที่คำถาม <ArrowRight aria-hidden /></button>}
+      </div>
+
+      <AnimatePresence>
+        {pop !== null && !all && (
+          <motion.div key={pop} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+            onAnimationComplete={() => setTimeout(() => setPop(null), 900)}
+            className="pointer-events-none absolute bottom-16 left-1/2 z-10 -translate-x-1/2 rounded-xl bg-cream px-4 py-2 text-center text-navy shadow-xl ring-2 ring-gold">
+            <div className="text-sm">พบ{items[pop].name}!</div>
+            <b className="font-num text-2xl text-teal">{items[pop].value}</b>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {stamp && (
+          <motion.div onClick={() => setStamp(false)} exit={{ opacity: 0 }} className="absolute inset-0 z-20 grid place-items-center bg-navy/80 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} role="status">
+            <motion.div className="relative w-[min(70vmin,420px)]" initial={{ scale: 0.2, rotate: -25 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5 }}>
+              <Art file="ui-found.webp" className="w-full object-contain drop-shadow-2xl" fallback={<div className="aspect-square rounded-full bg-gold" />} />
+              <span className="absolute inset-x-0 top-[57%] text-center text-[min(7vmin,40px)] font-black text-white drop-shadow-[0_2px_0_#0B1B3F]">พบครบแล้ว!</span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
