@@ -18,7 +18,7 @@ export default function Cases() {
 
 function Picker() {
   return (
-    <Page title="กิจกรรมทีม · เลือก CASE" back="/hq" bg="hq-bg.webp">
+    <Page title="เริ่มสืบคดี · เลือก CASE" back="/hq" bg="hq-bg.webp">
       <div className="mx-auto grid max-w-5xl gap-4 sm:grid-cols-3">
         {DEFAULT_CASES.map((c, k) => (
           <motion.div key={c.code} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: k * 0.08 }}>

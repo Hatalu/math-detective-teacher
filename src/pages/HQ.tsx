@@ -8,7 +8,7 @@ import { Art } from '../components/art';
 const items = [
   { to: '/', icon: Film, title: 'ฉากเปิด', sub: 'เล่นฉากเปิดคดีอีกครั้ง' },
   { to: '/example', icon: Coffee, title: 'ตัวอย่างที่ 1', sub: 'โปสเตอร์รับสมัครพนักงาน ร้านกาแฟก้นแก้ว' },
-  { to: '/cases', icon: Users, title: 'กิจกรรมทีม', sub: 'ครูกดหาเบาะแสตามที่นักเรียนชี้ · CASE 01, 02, 03' },
+  { to: '/cases', icon: Users, title: 'เริ่มสืบคดี', sub: 'ครูกดหาเบาะแสตามที่นักเรียนชี้ · CASE 01, 02, 03' },
   { to: '/boards', icon: Images, title: 'บอร์ดโชว์ผลงาน', sub: 'นักเรียนสแกน QR อัปโหลดรูปใบงานของทีม' },
 ];
 
