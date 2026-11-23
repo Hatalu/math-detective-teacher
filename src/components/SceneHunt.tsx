@@ -81,7 +81,7 @@ export function SceneHunt({ scene, onDone }: { scene: CaseScene; onDone: () => v
       </div>
 
       {/* clues found so far */}
-      <div className="flex min-h-[52px] shrink-0 flex-wrap items-center gap-1.5 bg-cream p-2 text-navy" aria-label="เบาะแสที่พบแล้ว">
+      <div className="flex min-h-[52px] shrink-0 flex-wrap items-center gap-1.5 bg-cream p-2 pl-40 text-navy" aria-label="เบาะแสที่พบแล้ว">
         <span className="mr-1 text-sm font-semibold">พบแล้ว:</span>
         {found.map((i) => <span key={i} className="rounded-md bg-white px-2 font-num text-lg font-bold ring-1 ring-navy/20">{items[i].value}</span>)}
         {all && <button type="button" onClick={onDone} className="ml-auto inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-gold px-5 text-xl font-black text-navy shadow-[0_4px_0_#b5740a] active:translate-y-[2px]">ไปที่คำถาม <ArrowRight aria-hidden /></button>}

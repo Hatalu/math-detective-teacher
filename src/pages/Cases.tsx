@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Btn, Page } from '../components/ui';
 import { Art } from '../components/art';
 import { SceneHunt } from '../components/SceneHunt';
+import { NumberPicker } from '../components/NumberPicker';
 import { CASE_SCENES, DEFAULT_CASES } from '../lib/cases';
 
 /** Teacher-only team activity on the class screen: #/cases (pick a case) and #/cases/1..3 (brief → hunt → question).
@@ -86,6 +87,7 @@ function CaseView({ i }: { i: number }) {
           </div>
         </div>
       )}
+      <NumberPicker raised={phase === 'hunt'} />
     </Page>
   );
 }
