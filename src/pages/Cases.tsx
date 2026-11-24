@@ -8,7 +8,6 @@ import { Art } from '../components/art';
 import { SceneHunt } from '../components/SceneHunt';
 import { NumberPicker } from '../components/NumberPicker';
 import { CASE_SCENES, DEFAULT_CASES } from '../lib/cases';
-import { calculateMean, calculateMedian, fmt } from '../lib/math';
 
 /** Teacher-only team activity on the class screen: #/cases (pick a case) and #/cases/1..3 (brief → hunt → question).
  *  No rooms, no QR: the class points, the teacher taps, students write the data on their worksheet. */
@@ -19,9 +18,10 @@ export default function Cases() {
   return <CaseView key={i} i={i} />; // key: moving to another case starts it fresh
 }
 
-/** CASE 01 vs CASE 02: mean and median side by side (values computed from the case data). */
+/** CASE 01 vs CASE 02 comparison: cells start empty; the teacher types what the class says (kept while the page stays open). */
 function CompareTable() {
   const [open, setOpen] = useState(false);
+  const [vals, setVals] = useState<Record<string, string>>({});
   const rows = DEFAULT_CASES.slice(0, 2);
   return (
     <>
@@ -45,8 +45,13 @@ function CompareTable() {
                   {rows.map((c) => (
                     <tr key={c.code} className="bg-white">
                       <th className="border-4 border-navy p-3 text-alert">{c.code}</th>
-                      <td className="border-4 border-navy p-3 font-num">{fmt(calculateMean(c.data))}</td>
-                      <td className="border-4 border-navy p-3 font-num">{fmt(calculateMedian(c.data))}</td>
+                      {(['mean', 'median'] as const).map((m) => (
+                        <td key={m} className="border-4 border-navy p-0">
+                          <input value={vals[c.code + m] ?? ''} onChange={(e) => setVals((v) => ({ ...v, [c.code + m]: e.target.value }))} maxLength={12}
+                            aria-label={`${m === 'mean' ? 'ค่าเฉลี่ย' : 'มัธยฐาน'} ${c.code}`}
+                            className="h-16 w-full bg-white text-center font-num text-2xl font-bold text-navy focus:bg-gold/20 focus:outline-none sm:h-20 sm:text-4xl" />
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
