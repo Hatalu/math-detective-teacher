@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Search, Table2, X } from 'lucide-react';
 import { Btn, Page } from '../components/ui';
 import { Art } from '../components/art';
 import { SceneHunt } from '../components/SceneHunt';
 import { NumberPicker } from '../components/NumberPicker';
 import { CASE_SCENES, DEFAULT_CASES } from '../lib/cases';
+import { calculateMean, calculateMedian, fmt } from '../lib/math';
 
 /** Teacher-only team activity on the class screen: #/cases (pick a case) and #/cases/1..3 (brief → hunt → question).
  *  No rooms, no QR: the class points, the teacher taps, students write the data on their worksheet. */
@@ -15,6 +17,46 @@ export default function Cases() {
   const i = Number(n) - 1;
   if (!n || !DEFAULT_CASES[i]) return <Picker />;
   return <CaseView key={i} i={i} />; // key: moving to another case starts it fresh
+}
+
+/** CASE 01 vs CASE 02: mean and median side by side (values computed from the case data). */
+function CompareTable() {
+  const [open, setOpen] = useState(false);
+  const rows = DEFAULT_CASES.slice(0, 2);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}
+        className="fixed bottom-3 right-3 z-40 inline-flex h-12 items-center gap-2 rounded-full bg-gold px-4 font-bold text-navy shadow-[0_4px_0_#b5740a] ring-2 ring-navy transition hover:brightness-105 active:translate-y-[2px]">
+        <Table2 aria-hidden /> ตารางเปรียบเทียบ
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div role="dialog" aria-modal="true" aria-label="ตารางเปรียบเทียบ" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setOpen(false)} className="fixed inset-0 z-50 grid place-items-center bg-navy/80 p-4">
+            <motion.div initial={{ scale: 0.85 }} animate={{ scale: 1 }} onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-3xl rounded-3xl bg-cream p-5 text-navy shadow-2xl ring-8 ring-gold sm:p-8">
+              <button type="button" onClick={() => setOpen(false)} aria-label="ปิด" className="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full hover:bg-navy/10"><X /></button>
+              <h2 className="mb-4 text-center text-2xl font-black sm:text-3xl">เปรียบเทียบ CASE 01 และ CASE 02</h2>
+              <table className="w-full border-collapse text-center text-xl font-bold sm:text-3xl">
+                <thead>
+                  <tr className="bg-navy text-gold"><th className="border-4 border-navy p-3">CASE</th><th className="border-4 border-navy p-3">ค่าเฉลี่ย</th><th className="border-4 border-navy p-3">มัธยฐาน</th></tr>
+                </thead>
+                <tbody>
+                  {rows.map((c) => (
+                    <tr key={c.code} className="bg-white">
+                      <th className="border-4 border-navy p-3 text-alert">{c.code}</th>
+                      <td className="border-4 border-navy p-3 font-num">{fmt(calculateMean(c.data))}</td>
+                      <td className="border-4 border-navy p-3 font-num">{fmt(calculateMedian(c.data))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
 }
 
 function Picker() {
@@ -34,6 +76,7 @@ function Picker() {
           </motion.div>
         ))}
       </div>
+      <CompareTable />
     </Page>
   );
 }
