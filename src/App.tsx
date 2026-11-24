@@ -9,6 +9,7 @@ import SettingsPage from './pages/Settings';
 import Boards from './pages/Boards';
 import Board from './pages/Board';
 import Cases from './pages/Cases';
+import DataTable from './pages/DataTable';
 
 /** Last line of defence: a crash in any page shows a usable recovery screen. */
 class Boundary extends Component<{ children: ReactNode }, { err?: Error }> {
@@ -43,6 +44,7 @@ function Routed() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/boards" element={<Boards />} />
             <Route path="/board/:code" element={<Board />} />
+            <Route path="/datatable" element={<DataTable />} />
             <Route path="/cases" element={<Cases />} />
             <Route path="/cases/:n" element={<Cases />} />
             <Route path="*" element={<HQ />} />

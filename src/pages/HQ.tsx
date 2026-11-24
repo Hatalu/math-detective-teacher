@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Coffee, Film, Images, Users } from 'lucide-react';
+import { Coffee, Film, Images, Table2, Users } from 'lucide-react';
 import { HQScene } from '../components/cinema';
 import { Art } from '../components/art';
 
@@ -9,6 +9,7 @@ const items = [
   { to: '/', icon: Film, title: 'ฉากเปิด', sub: 'เล่นฉากเปิดคดีอีกครั้ง' },
   { to: '/example', icon: Coffee, title: 'ตัวอย่างที่ 1', sub: 'โปสเตอร์รับสมัครพนักงาน ร้านกาแฟก้นแก้ว' },
   { to: '/cases', icon: Users, title: 'เริ่มสืบคดี', sub: 'ครูกดหาเบาะแสตามที่นักเรียนชี้ · CASE 01, 02, 03' },
+  { to: '/datatable', icon: Table2, title: 'ตารางข้อมูล', sub: 'ข้อมูลของทั้ง 3 CASE · ค่าเฉลี่ย มัธยฐาน ฐานนิยม' },
   { to: '/boards', icon: Images, title: 'บอร์ดโชว์ผลงาน', sub: 'นักเรียนสแกน QR อัปโหลดรูปใบงานของทีม' },
 ];
 
